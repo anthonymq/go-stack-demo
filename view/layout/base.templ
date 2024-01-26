@@ -1,0 +1,27 @@
+package layout
+
+templ Base() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title>My Website</title>
+		</head>
+		<body>
+			<!-- Header -->
+			<header>
+				<nav>
+					<ul>
+						<li><a href="/login">Login</a></li>
+						<li><a href="/app/user">Profile</a></li>
+					</ul>
+				</nav>
+			</header>
+			<!-- Main Content -->
+			<main>
+				{ children... }
+			</main>
+			<!-- Footer -->
+			<footer></footer>
+		</body>
+	</html>
+}

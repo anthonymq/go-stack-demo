@@ -1,0 +1,17 @@
+package user
+
+import "github.com/anthonymq/go-stack-demo/view/layout"
+import "github.com/anthonymq/go-stack-demo/model"
+
+templ Show(user model.User) {
+	@layout.Base() {
+		<h1>Profile</h1>
+		<h3>{ user.Email }</h3>
+		<h3>Top Artists</h3>
+		<ul>
+			for _,artist := range user.TopArtists {
+				<li>{ artist.Name }</li>
+			}
+		</ul>
+	}
+}
