@@ -1,0 +1,27 @@
+package playlist
+
+import "github.com/anthonymq/go-stack-demo/model"
+
+templ SearchResults(tracks []model.Items) {
+	<div class="flow-root">
+		<ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+			for _,track := range tracks {
+				<li class="py-3 sm:py-4">
+					<div class="flex items-center">
+						<div class="flex-shrink-0">
+							<img class="w-8 h-8 rounded-full" src={ track.Album.Images[0].URL } alt="Neil image"/>
+						</div>
+						<div class="flex-1 min-w-0 ms-4">
+							<p class="text-sm font-medium text-gray-900 truncate ">
+								{ track.Name }
+							</p>
+							<!-- <p class="text-sm text-gray-500 truncate dark:text-gray-400"> -->
+							<!-- 	email@windster.com -->
+							<!-- </p> -->
+						</div>
+					</div>
+				</li>
+			}
+		</ul>
+	</div>
+}

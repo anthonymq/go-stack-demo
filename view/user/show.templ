@@ -5,13 +5,29 @@ import "github.com/anthonymq/go-stack-demo/model"
 
 templ Show(user model.User) {
 	@layout.Base() {
-		<h1>Profile</h1>
+		<h1 class="text-3xl md:text-5xl mb-4 font-extrabold" id="home">Profile</h1>
 		<h3>{ user.Email }</h3>
-		<h3>Top Artists</h3>
-		<ul>
-			for _,artist := range user.TopArtists {
-				<li>{ artist.Name }</li>
-			}
-		</ul>
+		<h3 class="text-xl font-bold">Top Artists</h3>
+		<div class="flow-root">
+			<ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+				for _,artist := range user.TopArtists {
+					<li class="py-3 sm:py-4">
+						<div class="flex items-center">
+							<div class="flex-shrink-0">
+								<img class="w-8 h-8 rounded-full" src={ artist.Images[0].Url } alt="Neil image"/>
+							</div>
+							<div class="flex-1 min-w-0 ms-4">
+								<p class="text-sm font-medium text-gray-900 truncate ">
+									{ artist.Name }
+								</p>
+								<!-- <p class="text-sm text-gray-500 truncate dark:text-gray-400"> -->
+								<!-- 	email@windster.com -->
+								<!-- </p> -->
+							</div>
+						</div>
+					</li>
+				}
+			</ul>
+		</div>
 	}
 }
