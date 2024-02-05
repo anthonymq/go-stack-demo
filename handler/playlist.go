@@ -33,7 +33,5 @@ func (h PlaylistHandler) HandlePlaylistSearchTracks(c echo.Context) error {
 		log.Println("Unmarshall error")
 	}
 
-	x := searchResults.Tracks.Items
-	spew.Dump(x)
-	return (render(c, playlist.SearchResults(x)))
+	return (render(c, playlist.SearchResults(searchResults)))
 }

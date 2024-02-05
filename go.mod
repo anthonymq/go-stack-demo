@@ -6,6 +6,7 @@ require (
 	github.com/a-h/templ v0.2.513
 	github.com/davecgh/go-spew v1.1.1
 	github.com/gorilla/sessions v1.2.1
+	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo-contrib v0.15.0
 	github.com/labstack/echo/v4 v4.11.4
 )

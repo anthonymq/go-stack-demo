@@ -38,13 +38,13 @@ func callSpotifyApi(u goth.User, method string, url string) []byte {
 	return bodyBytes
 }
 
-func RenewAccessTokenIfExpired(c echo.Context, s sessions.Session, u goth.User) goth.User {
+func RenewAccessTokenIfExpired(c echo.Context, s sessions.Session, u goth.User) (goth.User, error) {
 	if u.ExpiresAt.Before(time.Now()) {
 		log.Println("need Refresh")
 		t, err := SpotifyProvider.RefreshToken(u.RefreshToken)
 		if err != nil {
 			log.Println("Couldn't get a new AccessToken with this refreshToken")
-			c.Redirect(http.StatusSeeOther, "/login")
+			return goth.User{}, c.Redirect(http.StatusSeeOther, "/login")
 		}
 		u.AccessToken = t.AccessToken
 		u.ExpiresAt = t.Expiry
@@ -54,7 +54,7 @@ func RenewAccessTokenIfExpired(c echo.Context, s sessions.Session, u goth.User) 
 			log.Println("Error saving session", err)
 		}
 	}
-	return u
+	return u, nil
 }
 
 // func (u goth.User) isExpired() bool {
