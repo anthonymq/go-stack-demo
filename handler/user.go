@@ -31,7 +31,7 @@ func (h UserHandler) HandleUserShow(c echo.Context) error {
 		topArtists = append(topArtists, artist)
 
 	}
-	userModel := model.User{
+	userModel := model.UserShowViewModel{
 		Id:         userSession.UserID,
 		Email:      userSession.Email,
 		TopArtists: topArtists,

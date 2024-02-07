@@ -1,10 +1,10 @@
 package user
 
 import "github.com/anthonymq/go-stack-demo/view/layout"
-import "github.com/anthonymq/go-stack-demo/model"
 import "github.com/anthonymq/go-stack-demo/view"
+import "github.com/anthonymq/go-stack-demo/model"
 
-templ Show(user model.User) {
+templ Show(user model.UserShowViewModel) {
 	@layout.Base() {
 		<h1 class="text-3xl md:text-5xl mb-4 font-extrabold" id="home">Profile</h1>
 		<h3>{ user.Email }</h3>

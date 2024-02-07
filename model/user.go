@@ -1,6 +1,6 @@
 package model
 
-type User struct {
+type UserShowViewModel struct {
 	Id         string
 	Email      string
 	TopArtists []SpotifyArtist
