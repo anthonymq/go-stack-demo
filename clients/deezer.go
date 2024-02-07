@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -70,7 +71,7 @@ func FetchUser(session DeezerSession) (goth.User, error) {
 
 func userFromReader(reader io.Reader, user *goth.User) error {
 	u := struct {
-		// ID        string `json:"id"`
+		ID        int    `json:"id"`
 		Email     string `json:"email"`
 		FirstName string `json:"firstname"`
 		LastName  string `json:"lastname"`
@@ -85,7 +86,7 @@ func userFromReader(reader io.Reader, user *goth.User) error {
 		return err
 	}
 
-	// user.UserID = u.ID
+	user.UserID = strconv.Itoa(u.ID)
 	user.Email = u.Email
 	user.FirstName = u.FirstName
 	user.LastName = u.LastName

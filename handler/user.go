@@ -31,8 +31,8 @@ func (h UserHandler) HandleUserShow(c echo.Context) error {
 		topArtists = append(topArtists, artist)
 
 	}
-	// spew.Dump(topArtists)
 	userModel := model.User{
+		Id:         userSession.UserID,
 		Email:      userSession.Email,
 		TopArtists: topArtists,
 	}

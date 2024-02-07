@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/anthonymq/go-stack-demo/clients"
 	"github.com/anthonymq/go-stack-demo/handler"
+	"github.com/anthonymq/go-stack-demo/view"
 	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
 
@@ -56,11 +58,12 @@ func main() {
 		"http://localhost:3000/auth/spotify/callback",
 		"user-top-read",
 	)
-	goth.UseProviders(clients.DeezerProvider)
+	goth.UseProviders(clients.DeezerProvider, clients.SpotifyProvider)
 
 	app := echo.New()
 	// @TODO store auth in JWT Cookie
 	app.Use(session.Middleware(&cookieStore))
+	app.Use(PopulateTemplContextMiddleware)
 	userHandler := handler.UserHandler{}
 	loginHandler := handler.LoginHandler{}
 	playlistHandler := handler.PlaylistHandler{}
@@ -166,4 +169,17 @@ func main() {
 
 	app.Logger.Fatal(app.Start(":3000"))
 	fmt.Println("it works")
+}
+func PopulateTemplContextMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var avatarUrl string
+		sess, _ := session.Get("session", c)
+		userConnected, ok := sess.Values["user"].(goth.User)
+		if ok {
+			avatarUrl = userConnected.AvatarURL
+		}
+		ctx := context.WithValue(c.Request().Context(), view.ContextAvatarUrlKey, avatarUrl)
+		c.SetRequest(c.Request().WithContext(ctx))
+		return next(c)
+	}
 }
