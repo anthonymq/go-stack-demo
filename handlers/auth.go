@@ -23,6 +23,17 @@ import (
 
 type AuthHandler struct{}
 
+func (h *AuthHandler) logoutHandler(c echo.Context) error {
+	// Get the session from the request
+	sess, err := session.Get("session", c)
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	sess.Options.MaxAge = -1
+	sess.Save(c.Request(), c.Response())
+	return c.Redirect(http.StatusTemporaryRedirect, "/login")
+}
+
 func (h AuthHandler) HandleLoginShow(c echo.Context) error {
 	return render(c, login.Show())
 }
@@ -67,7 +78,7 @@ func (h *AuthHandler) spotifyCallbackHandler(c echo.Context) error {
 
 func (h *AuthHandler) deezerCallbackHandler(c echo.Context) error {
 	code := c.QueryParam("code")
-	authUrl := fmt.Sprintf("https://connect.deezer.com/oauth/access_token.php?app_id=%s&secret=%s&code=%s", common.DEEZER_CLIENT_KEY, common.DEEZER_CLIENT_SECRET, code)
+	authUrl := fmt.Sprintf("https://connect.deezer.com/oauth/access_token.php?app_id=%s&secret=%s&code=%s", common.GetSecret(common.DEEZER_CLIENT_KEY), common.GetSecret(common.DEEZER_CLIENT_SECRET), code)
 	requestAccessTokenResponse, err := http.Get(authUrl)
 	requestAccessTokenBody, err := io.ReadAll(requestAccessTokenResponse.Body)
 	if err != nil {

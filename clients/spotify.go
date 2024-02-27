@@ -2,11 +2,13 @@ package clients
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/anthonymq/go-stack-demo/logger"
+	"github.com/anthonymq/go-stack-demo/model"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/markbates/goth"
@@ -14,28 +16,22 @@ import (
 
 var SpotifyProvider goth.Provider
 
-func TopArtists(u goth.User) []byte {
-	// userSession := RenewAccessTokenIfExpired(c)
-	return callSpotifyApi(u, "GET", "https://api.spotify.com/v1/me/top/artists")
+func TopArtists(u goth.User) model.SpotifyTopArtists {
+	resp, _ := callSpotifyApi("GET", "https://api.spotify.com/v1/me/top/artists", u)
+	defer resp.Body.Close()
+	results, _ := unmarshal[model.SpotifyTopArtists](resp)
+	return results
 }
 
-func callSpotifyApi(u goth.User, method string, url string) []byte {
+func callSpotifyApi(method string, url string, u goth.User) (*http.Response, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, nil)
-
+	if err != nil {
+		logger.Get().Error(err.Error())
+		return nil, err
+	}
 	req.Header.Add("Authorization", "Bearer "+u.AccessToken)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("error getting me")
-	}
-	defer resp.Body.Close()
-	log.Println(resp.Status)
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("Error")
-	}
-	return bodyBytes
+	return client.Do(req)
 }
 
 func RenewAccessTokenIfExpired(c echo.Context, s sessions.Session, u goth.User) (goth.User, error) {
@@ -57,10 +53,20 @@ func RenewAccessTokenIfExpired(c echo.Context, s sessions.Session, u goth.User) 
 	return u, nil
 }
 
-// func (u goth.User) isExpired() bool {
-// 	return u.ExpiresAt.Before(time.Now())
-// }
-
-func SearchTrack(u goth.User, query string) []byte {
-	return callSpotifyApi(u, "GET", fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=5", query))
+func SearchTrack(u goth.User, query string) model.SpotifySearchResult {
+	resp, err := callSpotifyApi("GET",
+		fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=10", query),
+		u,
+	)
+	defer resp.Body.Close()
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	logger.Get().Info(resp.Status)
+	results, err := unmarshal[model.SpotifySearchResult](resp)
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	spew.Dump(results)
+	return results
 }

@@ -4,6 +4,7 @@ import "github.com/labstack/echo/v4"
 
 func SetupRoutes(e *echo.Echo, auth *AuthHandler, user *UserHandler, playlist *PlaylistHandler) {
 	e.GET("/login", auth.HandleLoginShow)
+	e.GET("/logout", auth.logoutHandler)
 	e.GET("/auth/spotify", auth.spotifyLoginHandler)
 	e.GET("/auth/spotify/callback", auth.spotifyCallbackHandler)
 	e.GET("/auth/deezer", auth.deezerLoginHandler)

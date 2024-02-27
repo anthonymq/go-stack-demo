@@ -1,13 +1,9 @@
 package handlers
 
 import (
-	"encoding/json"
-	"log"
-
 	"github.com/anthonymq/go-stack-demo/clients"
 	"github.com/anthonymq/go-stack-demo/model"
 	"github.com/anthonymq/go-stack-demo/view/user"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/markbates/goth"
@@ -19,15 +15,9 @@ type UserHandler struct {
 func (h UserHandler) HandleUserShow(c echo.Context) error {
 	session, _ := session.Get("session", c)
 	userSession := session.Values["user"].(goth.User)
-	bodyBytes := clients.TopArtists(userSession)
-	var topData model.SpotifyTopArtists
-	err := json.Unmarshal(bodyBytes, &topData)
-	if err != nil {
-		spew.Dump(err)
-		log.Println("Unmarshall error")
-	}
+	topArtistsReponse := clients.TopArtists(userSession)
 	var topArtists []model.SpotifyArtist
-	for _, artist := range topData.Items {
+	for _, artist := range topArtistsReponse.Items {
 		topArtists = append(topArtists, artist)
 
 	}

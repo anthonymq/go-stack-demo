@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/anthonymq/go-stack-demo/logger"
+	"github.com/anthonymq/go-stack-demo/model"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/markbates/goth"
 )
@@ -95,4 +97,32 @@ func userFromReader(reader io.Reader, user *goth.User) error {
 	user.Location = u.Location
 
 	return nil
+}
+
+func callDeezerApi(method string, url string, u goth.User) (*http.Response, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		logger.Get().Error(err.Error())
+		return nil, err
+	}
+	req.Header.Add("Authorization", "Bearer "+u.AccessToken)
+	return client.Do(req)
+}
+func DeezerSearchTrack(u goth.User, query string) model.DeezerSearchTrackResults {
+	resp, err := callDeezerApi("GET",
+		fmt.Sprintf("https://api.deezer.com/search?q=%s&limit=10", query),
+		u,
+	)
+	defer resp.Body.Close()
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	logger.Get().Info(resp.Status)
+	results, err := unmarshal[model.DeezerSearchTrackResults](resp)
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	spew.Dump(results)
+	return results
 }
