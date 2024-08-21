@@ -16,7 +16,10 @@ type PlaylistHandler struct {
 }
 
 func (h PlaylistHandler) HandlePlaylistShow(c echo.Context) error {
-	return (render(c, playlist.Show()))
+	session, _ := session.Get("session", c)
+	userSession := session.Values["user"].(goth.User)
+	playlists := clients.DeezerGetUserPlaylists(userSession)
+	return (render(c, playlist.Show(playlists)))
 }
 
 func (h PlaylistHandler) HandlePlaylistSearchTracks(c echo.Context) error {
@@ -32,4 +35,14 @@ func (h PlaylistHandler) HandlePlaylistSearchTracks(c echo.Context) error {
 		searchResults = clients.DeezerSearchTrack(userSession, query).ToSearchResults()
 	}
 	return (render(c, playlist.SearchResults(searchResults)))
+}
+
+func (h PlaylistHandler) HandleAddTrackToPlaylist(c echo.Context) error {
+	session, _ := session.Get("session", c)
+	userSession := session.Values["user"].(goth.User)
+	trackId := c.QueryParam("trackId")
+	playlists := clients.DeezerGetUserPlaylists(userSession)
+	playlistSharedId := playlists.Data[1].ID
+	clients.DeezerAddTrackToPlaylist(userSession, playlistSharedId, trackId)
+	return (render(c, playlist.Show(playlists)))
 }

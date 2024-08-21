@@ -2,19 +2,14 @@ package handlers
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"net/url"
-	"strconv"
-	"time"
 
 	"github.com/anthonymq/go-stack-demo/clients"
-	"github.com/anthonymq/go-stack-demo/common"
 	"github.com/anthonymq/go-stack-demo/logger"
 	"github.com/anthonymq/go-stack-demo/view"
 	"github.com/anthonymq/go-stack-demo/view/login"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/markbates/goth"
@@ -77,39 +72,15 @@ func (h *AuthHandler) spotifyCallbackHandler(c echo.Context) error {
 }
 
 func (h *AuthHandler) deezerCallbackHandler(c echo.Context) error {
-	code := c.QueryParam("code")
-	authUrl := fmt.Sprintf("https://connect.deezer.com/oauth/access_token.php?app_id=%s&secret=%s&code=%s", common.GetSecret(common.DEEZER_CLIENT_KEY), common.GetSecret(common.DEEZER_CLIENT_SECRET), code)
-	requestAccessTokenResponse, err := http.Get(authUrl)
-	requestAccessTokenBody, err := io.ReadAll(requestAccessTokenResponse.Body)
-	if err != nil {
-		fmt.Printf("client: could not read response body: %s\n", err)
-	}
-	defer requestAccessTokenResponse.Body.Close()
-	vals, err := url.ParseQuery(string(requestAccessTokenBody))
-	if err != nil {
-		log.Println("no access token")
-	}
-	expires, err := strconv.Atoi(vals.Get("expires"))
-	if err != nil {
-		log.Panicf("could not get expires: %s\n", err)
-	}
-
-	deezerSession := clients.DeezerSession{
-		AccessToken: vals.Get("access_token"),
-		ExpiresAt:   time.Now().Add(time.Duration(expires)),
-	}
-
-	userConnected, err := clients.FetchUser(deezerSession)
-	if err != nil {
-		log.Panicln("Error retrieving connected user", err)
-	}
-
-	currentSession, err := session.Get("session", c)
+	user, err := gothic.CompleteUserAuth(c.Response(), c.Request())
+	session, err := session.Get("session", c)
 	if err != nil {
 		log.Println("Error retrieving session", err)
 	}
-	currentSession.Values["user"] = userConnected
-	err = currentSession.Save(c.Request(), c.Response().Writer)
+	user.RawData = map[string]interface{}{}
+	session.Values["user"] = user
+	spew.Dump(user)
+	err = session.Save(c.Request(), c.Response().Writer)
 	if err != nil {
 		log.Println("Error saving session", err)
 	}

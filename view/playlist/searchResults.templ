@@ -21,9 +21,12 @@ templ SearchResults(results []model.SearchResult) {
 							<img class="w-8 h-8 rounded-full" src={ track.Cover } alt="Neil image"/>
 						</div>
 						<div class="flex-1 min-w-0 ms-4">
-							<p class="text-sm font-medium text-gray-900 truncate ">
+							<a
+								hx-get={ "/app/playlist/addTrackToPlaylist?trackId=" + track.Id }
+								class="text-sm font-medium text-gray-900 truncate "
+							>
 								{ track.Title }
-							</p>
+							</a>
 							<p class="text-sm text-gray-500 truncate dark:text-gray-400">
 								<b class="pr-2">{ getAllArtists(track.Artists) }</b>
 							</p>

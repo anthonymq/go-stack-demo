@@ -34,6 +34,7 @@ func main() {
 		common.GetSecret(common.DEEZER_CLIENT_SECRET),
 		"http://localhost:3000/auth/deezer/callback",
 		"email",
+		"manage_library", "listening_history",
 	)
 	clients.SpotifyProvider = spotify.New(
 		common.GetSecret(common.SPOTIFY_CLIENT_KEY),

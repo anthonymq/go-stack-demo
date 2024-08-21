@@ -14,12 +14,14 @@ import (
 	"github.com/anthonymq/go-stack-demo/model"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/markbates/goth"
+	"go.uber.org/zap"
 )
 
 const (
 	authURL         string = "https://connect.deezer.com/oauth/auth.php"
 	tokenURL        string = "https://connect.deezer.com/oauth/access_token.php"
 	endpointProfile string = "https://api.deezer.com/user/me"
+	apiBasePath     string = "https://api.deezer.com"
 )
 
 // DeezerSession stores data during the auth process with Deezer.
@@ -99,20 +101,28 @@ func userFromReader(reader io.Reader, user *goth.User) error {
 	return nil
 }
 
-func callDeezerApi(method string, url string, u goth.User) (*http.Response, error) {
+func callDeezerApi(path string, u goth.User, urlParams url.Values) (*http.Response, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	base, err := url.Parse(apiBasePath + path)
+	if err != nil {
+		return nil, err
+	}
+	base.RawQuery = urlParams.Encode()
+	req, err := http.NewRequest(http.MethodGet, base.String(), nil)
 	if err != nil {
 		logger.Get().Error(err.Error())
 		return nil, err
 	}
-	req.Header.Add("Authorization", "Bearer "+u.AccessToken)
 	return client.Do(req)
 }
 func DeezerSearchTrack(u goth.User, query string) model.DeezerSearchTrackResults {
-	resp, err := callDeezerApi("GET",
-		fmt.Sprintf("https://api.deezer.com/search?q=%s&limit=10", query),
+	params := url.Values{}
+	params.Add("q", query)
+	params.Add("limit", "10")
+	resp, err := callDeezerApi(
+		"/search",
 		u,
+		params,
 	)
 	defer resp.Body.Close()
 	if err != nil {
@@ -123,6 +133,62 @@ func DeezerSearchTrack(u goth.User, query string) model.DeezerSearchTrackResults
 	if err != nil {
 		logger.Get().Error(err.Error())
 	}
-	spew.Dump(results)
 	return results
+}
+
+func DeezerGetUserPlaylists(u goth.User) model.DeezerGetPlaylists {
+	resp, err := callDeezerApi(
+		fmt.Sprintf("/user/%s/playlists", u.UserID),
+		u,
+		nil,
+	)
+
+	defer resp.Body.Close()
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	logger.Get().Info(resp.Status)
+	results, err := unmarshal[model.DeezerGetPlaylists](resp)
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	return results
+
+}
+
+func DeezerListeningHistory(u goth.User) {
+	resp, err := callDeezerApi("/user/me/history", u, nil)
+	defer resp.Body.Close()
+
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	logger.Get().Debug("Response body", zap.String("body", string(bodyBytes)))
+	logger.Get().Info(resp.Status)
+
+}
+
+func DeezerAddTrackToPlaylist(u goth.User, plId int, tId string) bool {
+	path := fmt.Sprintf("/playlist/%d/tracks", plId)
+	params := url.Values{}
+	params.Add("request_method", "POST")
+	params.Add("songs", tId)
+	// params.Add("order", tId)
+	params.Add("access_token", u.AccessToken)
+	resp, err := callDeezerApi(
+		path,
+		u,
+		params,
+	)
+
+	defer resp.Body.Close()
+	if err != nil {
+		logger.Get().Error(err.Error())
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+
+	logger.Get().Debug("Response body", zap.String("body", string(bodyBytes)))
+	logger.Get().Info(resp.Status)
+	return resp.StatusCode == http.StatusOK
 }

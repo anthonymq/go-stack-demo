@@ -21,6 +21,7 @@ func (h UserHandler) HandleUserShow(c echo.Context) error {
 		topArtists = append(topArtists, artist)
 
 	}
+	clients.DeezerListeningHistory(userSession)
 	userModel := model.UserShowViewModel{
 		Id:         userSession.UserID,
 		Email:      userSession.Email,

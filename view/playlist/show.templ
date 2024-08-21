@@ -1,9 +1,13 @@
 package playlist
 
 import "github.com/anthonymq/go-stack-demo/view/layout"
+import "github.com/anthonymq/go-stack-demo/model"
 
-templ Show() {
+templ Show(dto model.DeezerGetPlaylists) {
 	@layout.Base() {
+		for _, pl := range dto.Data {
+			<p>{ pl.Title }</p>
+		}
 		<input
 			class="form-control"
 			type="search"

@@ -14,4 +14,5 @@ func SetupRoutes(e *echo.Echo, auth *AuthHandler, user *UserHandler, playlist *P
 	protectedGroup.GET("/user", user.HandleUserShow)
 	protectedGroup.GET("/playlist", playlist.HandlePlaylistShow)
 	protectedGroup.GET("/playlist/searchTracks", playlist.HandlePlaylistSearchTracks)
+	protectedGroup.GET("/playlist/addTrackToPlaylist", playlist.HandleAddTrackToPlaylist)
 }
